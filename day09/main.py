@@ -1,5 +1,3 @@
-import requests
-
 def next_seq(input):
     res = list()
     for i in range(len(input) - 1):
