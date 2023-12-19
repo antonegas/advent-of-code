@@ -2,53 +2,70 @@ def create_ranges(input_maps):
     res = list()
     for input_map in input_maps:
         destination, source, length = input_map
-        offset = source - destination
+        offset = destination - source
         res.append((source, length, offset))
     return sorted(res, key=lambda x: x[0])
 
-def combine_two_ranges(range1: tuple[int, int, int], range2: tuple[int, int, int]):
-    smaller, larger = (range1, range2) if range1[0] < range2[0] else (range2, range1)
-    smaller_start = smaller[0]
-    smaller_length = smaller[1]
-    smaller_end = smaller_start + smaller_length - 1
-    smaller_offset = smaller[2]
-    larger_start = larger[0]
-    larger_length = larger[1]
-    larger_end = larger_start + larger_length - 1
-    larger_offset = larger[2]
-
-    if smaller_start == larger_start:
-        if smaller_end == larger_end:
-            # The ranges start and end at the same index
-            return ((smaller_start, smaller_length, smaller_offset + larger_offset),)
-        if smaller_end < larger_end:
-            # The ranges start at the same index but the "smaller" range ends before the "larger" range
-            return ((smaller_start, smaller_length, smaller_offset + larger_offset), 
-                    (smaller_end + 1, larger_end - smaller_end, larger_offset))
-        # The ranges start at the same index but the "smaller" range ends after the "larger" range
-        return ((larger_start, larger_length, larger_offset + smaller_offset), 
-                (larger_end + 1, smaller_end - larger_end, smaller_offset))
-    else:
-        if smaller_end == larger_end:
-            # The ranges end at the same index but the "smaller" range starts before the "larger" range
-            return ((smaller_start, larger_start - smaller_start, smaller_offset), 
-                    (larger_start, larger_length, larger_offset + smaller_offset))
-        if smaller_end < larger_end:
-            # There is no overlap between the ranges.
-            return ((smaller_start, smaller_length, smaller_offset), 
-                    (larger_start, larger_length, larger_offset))
-        # The "larger" range is contained entirely inside the "smaller" range
-        return ((smaller_start, smaller_end - larger_start, smaller_offset), 
-                (larger_start, larger_length, larger_offset + smaller_offset), 
-                (larger_end + 1, smaller_end - larger_end, smaller_offset))
-
-
-def combine_ranges(ranges_list1: list[tuple[int, int, int]], ranges_list2: list[tuple[int, int, int]]):
+def create_seed_ranges1(seeds):
     res = list()
-    both_ranges_lists = sorted(ranges_list1 + ranges_list2, key=lambda x: x[0])
-    
-    # TODO: combine ranges and add to res
+    for seed in seeds:
+        res.append((seed, 1, 0))
+    return sorted(res, key=lambda x: x[0])
 
+def create_seed_ranges2(seeds):
+    res = list()
+    for i in range(0, len(seeds), 2):
+        res.append((seeds[i], seeds[i + 1], 0))
+    return sorted(res, key=lambda x: x[0])
+
+def combine_two_ranges(from_range: tuple[int, int, int], to_range: tuple[int, int, int]):
+    """ tuple[start of range, length of range, offset of range] """
+    combined = list()
+    from_rest = []
+    to_rest = []
+
+    if from_range[0] < to_range[0]:
+        combined.append((from_range[0], min(from_range[1], to_range[0] - from_range[0]), from_range[2]))
+    if from_range[0] < to_range[0] + to_range[1] and from_range[0] + from_range[1] > to_range[0]:
+        combined.append((max(to_range[0], from_range[0]), min(from_range[0] + from_range[1], to_range[0] + to_range[1]) - max(from_range[0], to_range[0]), from_range[2] + to_range[2]))
+    # Change rests
+    if from_range[0] + from_range[1] > to_range[0] + to_range[1]:
+        from_rest = [(max(to_range[0] + to_range[1], from_range[0]), min(from_range[0] + from_range[1] - to_range[0] - to_range[1], from_range[1]), from_range[2])]
+    elif from_range[0] + from_range[1] < to_range[0] + to_range[1]:
+        to_rest = [(max(from_range[0] + from_range[1], to_range[0]), min(to_range[0] + to_range[1] - from_range[0] - from_range[1], to_range[1]), to_range[2])]
+
+    return combined, from_rest, to_rest
+
+
+def combine_ranges(from_ranges: list[tuple[int, int, int]], to_ranges: list[tuple[int, int, int]]):
+    res = list()
+    current_from_ranges = from_ranges
+    current_to_ranges = to_ranges
+    
+    while len(current_from_ranges) > 0 and len(current_to_ranges) > 0:
+        next_from_range = current_from_ranges[0]
+        next_to_range = current_to_ranges[0]
+        to_add, rest_from, rest_to = combine_two_ranges(next_from_range, next_to_range)
+        res.extend(to_add)
+        current_from_ranges = rest_from + current_from_ranges[1:]
+        current_to_ranges = rest_to + current_to_ranges[1:]
+
+    res.extend(current_from_ranges)
+
+    return sorted(res, key=lambda x: x[0])
+
+def add_offsets(map_ranges):
+    res = list()
+    for map_range in map_ranges:
+        start, length, offset = map_range
+        res.append((start + offset, length, 0))
+    return sorted(res, key=lambda x: x[0])
+
+def location_from_seed(seed_ranges, maps):
+    res = seed_ranges
+    for _map in tuple(maps.values())[1:]:
+        to_ranges = create_ranges(_map)
+        res = add_offsets(combine_ranges(res, to_ranges))
     return res
 
 if __name__ == "__main__":
@@ -61,3 +78,6 @@ if __name__ == "__main__":
     maps = {x[0]: list(list(int(z) for z in y.split(" ")) for y in x[1].split("\n")) for x in data}
 
     seeds = maps["seeds"][0]
+
+    print("Part 1:", min(*[x[0] for x in location_from_seed(create_seed_ranges1(seeds), maps)]))
+    print("Part 2:", min(*[x[0] for x in location_from_seed(create_seed_ranges2(seeds), maps)]))
