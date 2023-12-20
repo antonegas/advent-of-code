@@ -10,7 +10,7 @@ def all_zeros(input):
             return False
     return True
 
-def get_differneces(input):
+def get_differences(input):
     res = list()
     res.append(input)
     current = input
@@ -20,7 +20,7 @@ def get_differneces(input):
 
     return res
     
-def extrapulate_values(input):
+def extrapulate_values1(input):
     res = list()
     val = input.pop(-1)
     res.append(val[-1])
@@ -47,11 +47,5 @@ if __name__ == "__main__":
     data = [list(x.split(" ")) for x in data]
     data = [[int(y) for y in x] for x in data]
 
-    res = 0
-
-    for x in data:
-        temp = extrapulate_values2(get_differneces(x))
-        res += temp[-1]
-
-    print(res)
-
+    print("Part 1:", sum([extrapulate_values1(get_differences(x))[-1] for x in data]))
+    print("Part 2:", sum([extrapulate_values2(get_differences(x))[-1] for x in data]))
