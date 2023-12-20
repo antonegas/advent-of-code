@@ -7,7 +7,6 @@ All my advent of code solutions
 # Notes
 - Day 7: main.py doesn't currently solves part 1.
 - Day 8: main.py was not the code I used to solve part 2. It probably could solve part 2, but it is inefficient.
-- Day 9: main.py doesn't print all solutions.
 - Day 12: main.py was my initial solution, but main2.py is more efficient due to the recursive calls with memoization.
 
 # Fun Facts
