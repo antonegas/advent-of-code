@@ -1,5 +1,3 @@
-from functools import cache
-
 DIRECTIONS = ["north", "south", "west", "east"]
 
 def transpose(dish):
@@ -81,18 +79,30 @@ def slide(dish):
 
     return list(reversed(res))
 
-@cache
 def cycle(dish):
     res = slide_direction(dish, "north")
-    res = slide_direction(dish, "west")
-    res = slide_direction(dish, "south")
-    res = slide_direction(dish, "east")
+    res = slide_direction(res, "west")
+    res = slide_direction(res, "south")
+    res = slide_direction(res, "east")
     return res
 
 def cycle_n(dish, n):
     res = dish
-    for _ in range(n):
-        res = cycle(dish)
+    previous = dict()
+    n_to_repeat = -1
+    i = 0
+    while i < n:
+        res = cycle(res)
+        res_key = tuple(res)
+        if i < 500:
+            if res_key in previous.keys():
+                first_occurence = previous[res_key]
+                n_to_repeat = i - first_occurence
+                i = n - (n - i) % n_to_repeat
+            else:
+                previous[res_key] = i
+        i += 1
+
     return res
 
 def total_load(dish):
@@ -111,4 +121,4 @@ if __name__ == "__main__":
     dish = list(data.split("\n"))
 
     print("Part 1:", total_load(slide_direction(dish, "north")))
-    print("Part 2:", total_load(cycle_n(dish, 1000000000)))
+    print("Part 2:", total_load(cycle_n(dish, 1_000_000_000)))
