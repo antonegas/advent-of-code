@@ -55,7 +55,7 @@ def dijkstra(start: tuple[int, int], direction: tuple[int, int], min_repeat: int
     goal = (len(heat_loss_map[0]) - 1, len(heat_loss_map) - 1)
     current = [0] # temp
 
-    while current[0] != goal and queue:
+    while (current[0] != goal) and queue:
         queue.sort(key=lambda x: costs[x])
         current = queue.pop(0)
         visited.add(current)
@@ -63,8 +63,6 @@ def dijkstra(start: tuple[int, int], direction: tuple[int, int], min_repeat: int
         for neighbor in neighbors(current, min_repeat, max_repeat, heat_loss_map):
             if neighbor in visited or neighbor in queue:
                 continue
-            else:
-                queue.append(neighbor)
             cost_to_neighbor = heat_loss_map[neighbor[0][1]][neighbor[0][0]]
             if neighbor not in costs:
                 costs[neighbor] = float("inf")
@@ -72,6 +70,7 @@ def dijkstra(start: tuple[int, int], direction: tuple[int, int], min_repeat: int
             if other_cost < costs[neighbor]:
                 costs[neighbor] = other_cost
                 previous[neighbor] = current
+                queue.append(neighbor)
     return costs[current]
 
 if __name__ == "__main__":
@@ -81,6 +80,5 @@ if __name__ == "__main__":
     data = open(os.path.join(__location__, "input.txt"), "r").read()
     heat_loss_map = list(list(int(y) for y in x) for x in data.splitlines())
 
-    # print("Part 1:", total_heat_loss(path_from_previous((0, 0), *dijkstra((0, 0), RIGHT, 0, 3, heat_loss_map)), heat_loss_map))
-    print("Part 2:", dijkstra((0, 0), RIGHT, 0, 3, heat_loss_map))
+    print("Part 1:", dijkstra((0, 0), RIGHT, 0, 3, heat_loss_map))
     print("Part 2:", dijkstra((0, 0), RIGHT, 4, 10, heat_loss_map))
