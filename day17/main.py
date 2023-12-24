@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 UP = (0, -1)
 DOWN = (0, 1)
 LEFT = (-1, 0)
@@ -44,7 +46,7 @@ def neighbors(node, min_repeat, max_repeat, heat_loss_map):
 def dijkstra(start: tuple[int, int], direction: tuple[int, int], min_repeat: int, max_repeat: int, heat_loss_map: list[list[int]]):
     # Coordinate, direction, current repeat: cost
     visited = set()
-    costs: dict[tuple[tuple[int, int], tuple[int, int], int], int] = dict()
+    costs: dict[tuple[tuple[int, int], tuple[int, int], int], int] = defaultdict(lambda: float("inf"))
     previous: dict[tuple[tuple[int, int], tuple[int, int], int], tuple[int, int]] = dict()
 
     for i in range(max_repeat):
@@ -64,8 +66,6 @@ def dijkstra(start: tuple[int, int], direction: tuple[int, int], min_repeat: int
             if neighbor in visited or neighbor in queue:
                 continue
             cost_to_neighbor = heat_loss_map[neighbor[0][1]][neighbor[0][0]]
-            if neighbor not in costs:
-                costs[neighbor] = float("inf")
             other_cost = costs[current] + cost_to_neighbor
             if other_cost < costs[neighbor]:
                 costs[neighbor] = other_cost
