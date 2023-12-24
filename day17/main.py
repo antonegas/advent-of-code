@@ -1,5 +1,5 @@
 from collections import defaultdict
-import heapq
+from heapq import heappush, heappop
 
 UP = (0, -1)
 DOWN = (0, 1)
@@ -15,61 +15,41 @@ def rotate(direction: tuple[int, int], clockwise: bool):
     else:
         return (dy, -dx)
     
-def neighbors(node, min_repeat, max_repeat, heat_loss_map):
-    coordinate, direction, repeat = node
-    new_repeat = repeat + 1
+def add(queue, visited, cost, coordinate, direction, steps, heat_loss_map):
     x, y = coordinate
-    possible_neighbors = list()
-    # Go forward
-    if new_repeat < max_repeat:
-        dx, dy = direction
-        possible_neighbors.append(((x + dx, y + dy), direction, new_repeat))
-    if new_repeat >= min_repeat:
-        # rotate left
-        left_direction = rotate(direction, False)
-        left_dx, left_dy = left_direction
-        possible_neighbors.append(((x + left_dx, y + left_dy), left_direction, 0))
-        # rotate right
-        right_direction = rotate(direction, True)
-        right_dx, right_dy = right_direction
-        possible_neighbors.append(((x + right_dx, y + right_dy), right_direction, 0))
+    dx, dy = direction
+    new_x = x + dx
+    new_y = y + dy
+    if new_x < 0 or new_x >= len(heat_loss_map[0]) or new_y < 0 or new_y >= len(heat_loss_map):
+        return
+    to_add = (cost + heat_loss_map[new_y][new_x], (new_x, new_y), direction, steps + 1)
+    if to_add[1:] in visited:
+        return
+    visited.add(to_add[1:])
+    heappush(queue, to_add)
 
-    res = list()
-
-    for possible_neighbor in possible_neighbors:
-        coordinate, _, _ = possible_neighbor
-        x, y = coordinate
-        if x >= 0 and x < len(heat_loss_map[0]) and y >= 0 and y < len(heat_loss_map):
-            res.append(possible_neighbor)
-
-    return res
-
-def dijkstra(start: tuple[int, int], direction: tuple[int, int], min_repeat: int, max_repeat: int, heat_loss_map: list[list[int]]):
-    # Coordinate, direction, current repeat: cost
+def dijkstra(start: tuple[int, int], min_steps: int, max_steps: int, heat_loss_map: list[list[int]]):
+    # Coordinate, direction, current steps
     visited = set()
-    costs: dict[tuple[tuple[int, int], tuple[int, int], int], int] = defaultdict(lambda: float("inf"))
-
-    for i in range(max_repeat):
-        for _direction in DIRECTIONS:
-            costs[(start, _direction, i)] = 0
     
-    queue = [(0, (start, direction, 0))]
+    # cost, coordinate, direction, steps
+    queue = [(0, start, (1, 0), 0), (0, start, (0, 1), 0)]
     goal = (len(heat_loss_map[0]) - 1, len(heat_loss_map) - 1)
-    current = [0] # temp
+    current = queue[0] # temp
 
-    while current[0] != goal and queue:
-        current = heapq.heappop(queue)[1]
-        visited.add(current)
+    while (current[3] < min_steps or current[1] != goal) and queue:
+        current = heappop(queue)
+        visited.add(current[1:])
+        cost, coordinate, direction, steps = current
 
-        for neighbor in neighbors(current, min_repeat, max_repeat, heat_loss_map):
-            if neighbor in visited or neighbor in queue:
-                continue
-            cost_to_neighbor = heat_loss_map[neighbor[0][1]][neighbor[0][0]]
-            other_cost = costs[current] + cost_to_neighbor
-            if other_cost < costs[neighbor]:
-                costs[neighbor] = other_cost
-                heapq.heappush(queue, (costs[neighbor], neighbor))
-    return costs[current]
+        if steps < max_steps:
+            add(queue, visited, cost, coordinate, direction, steps, heat_loss_map)
+
+        if steps >= min_steps:
+            add(queue, visited, cost, coordinate, rotate(direction, True), 0, heat_loss_map)
+            add(queue, visited, cost, coordinate, rotate(direction, False), 0, heat_loss_map)
+    
+    return current[0]
 
 if __name__ == "__main__":
     import os
@@ -78,5 +58,5 @@ if __name__ == "__main__":
     data = open(os.path.join(__location__, "input.txt"), "r").read()
     heat_loss_map = list(list(int(y) for y in x) for x in data.splitlines())
 
-    print("Part 1:", dijkstra((0, 0), RIGHT, 0, 3, heat_loss_map))
-    # print("Part 2:", dijkstra((0, 0), RIGHT, 4, 10, heat_loss_map))
+    print("Part 1:", dijkstra((0, 0), 0, 3, heat_loss_map))
+    print("Part 2:", dijkstra((0, 0), 4, 10, heat_loss_map))
