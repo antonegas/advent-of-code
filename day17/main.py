@@ -12,7 +12,7 @@ def rotate(direction: tuple[int, int], clockwise: bool):
     else:
         return (dy, -dx)
     
-def neighbors(node, max_repeat, heat_loss_map):
+def neighbors(node, min_repeat, max_repeat, heat_loss_map):
     coordinate, direction, repeat = node
     new_repeat = repeat + 1
     x, y = coordinate
@@ -21,14 +21,15 @@ def neighbors(node, max_repeat, heat_loss_map):
     if new_repeat < max_repeat:
         dx, dy = direction
         possible_neighbors.append(((x + dx, y + dy), direction, new_repeat))
-    # rotate left
-    left_direction = rotate(direction, False)
-    left_dx, left_dy = left_direction
-    possible_neighbors.append(((x + left_dx, y + left_dy), left_direction, 0))
-    # rotate right
-    right_direction = rotate(direction, True)
-    right_dx, right_dy = right_direction
-    possible_neighbors.append(((x + right_dx, y + right_dy), right_direction, 0))
+    if new_repeat >= min_repeat:
+        # rotate left
+        left_direction = rotate(direction, False)
+        left_dx, left_dy = left_direction
+        possible_neighbors.append(((x + left_dx, y + left_dy), left_direction, 0))
+        # rotate right
+        right_direction = rotate(direction, True)
+        right_dx, right_dy = right_direction
+        possible_neighbors.append(((x + right_dx, y + right_dy), right_direction, 0))
 
     res = list()
 
@@ -40,22 +41,7 @@ def neighbors(node, max_repeat, heat_loss_map):
 
     return res
 
-def path_from_previous(start, goal_key, previous):
-    path = [goal_key[0]]
-    current = goal_key
-    while current[0] != start:
-        current = previous[current]
-        path.append(current[0])
-    return list(reversed(path))
-
-def total_heat_loss(path, heat_loss_map):
-    total = 0
-    for node in path[1:]:
-        x, y = node
-        total += heat_loss_map[y][x]
-    return total
-
-def dijkstra(start: tuple[int, int], direction: tuple[int, int], max_repeat: int, heat_loss_map: list[list[int]]):
+def dijkstra(start: tuple[int, int], direction: tuple[int, int], min_repeat: int, max_repeat: int, heat_loss_map: list[list[int]]):
     # Coordinate, direction, current repeat: cost
     visited = set()
     costs: dict[tuple[tuple[int, int], tuple[int, int], int], int] = dict()
@@ -74,7 +60,7 @@ def dijkstra(start: tuple[int, int], direction: tuple[int, int], max_repeat: int
         current = queue.pop(0)
         visited.add(current)
 
-        for neighbor in neighbors(current, max_repeat, heat_loss_map):
+        for neighbor in neighbors(current, min_repeat, max_repeat, heat_loss_map):
             if neighbor in visited or neighbor in queue:
                 continue
             else:
@@ -86,8 +72,7 @@ def dijkstra(start: tuple[int, int], direction: tuple[int, int], max_repeat: int
             if other_cost < costs[neighbor]:
                 costs[neighbor] = other_cost
                 previous[neighbor] = current
-
-    return current, previous
+    return costs[current]
 
 if __name__ == "__main__":
     import os
@@ -96,6 +81,6 @@ if __name__ == "__main__":
     data = open(os.path.join(__location__, "input.txt"), "r").read()
     heat_loss_map = list(list(int(y) for y in x) for x in data.splitlines())
 
-
-    print("Part 1:", total_heat_loss(path_from_previous((0, 0), *dijkstra((0, 0), RIGHT, 3, heat_loss_map)), heat_loss_map))
-    print("Part 2:", 0)
+    # print("Part 1:", total_heat_loss(path_from_previous((0, 0), *dijkstra((0, 0), RIGHT, 0, 3, heat_loss_map)), heat_loss_map))
+    print("Part 2:", dijkstra((0, 0), RIGHT, 0, 3, heat_loss_map))
+    print("Part 2:", dijkstra((0, 0), RIGHT, 4, 10, heat_loss_map))
