@@ -57,7 +57,7 @@ def dijkstra(start: tuple[int, int], direction: tuple[int, int], min_repeat: int
     goal = (len(heat_loss_map[0]) - 1, len(heat_loss_map) - 1)
     current = [0] # temp
 
-    while (current[0] != goal) and queue:
+    while current[0] != goal and queue:
         current = heapq.heappop(queue)[1]
         visited.add(current)
 
