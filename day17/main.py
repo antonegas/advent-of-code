@@ -48,7 +48,6 @@ def dijkstra(start: tuple[int, int], direction: tuple[int, int], min_repeat: int
     # Coordinate, direction, current repeat: cost
     visited = set()
     costs: dict[tuple[tuple[int, int], tuple[int, int], int], int] = defaultdict(lambda: float("inf"))
-    previous: dict[tuple[tuple[int, int], tuple[int, int], int], tuple[int, int]] = dict()
 
     for i in range(max_repeat):
         for _direction in DIRECTIONS:
@@ -69,7 +68,6 @@ def dijkstra(start: tuple[int, int], direction: tuple[int, int], min_repeat: int
             other_cost = costs[current] + cost_to_neighbor
             if other_cost < costs[neighbor]:
                 costs[neighbor] = other_cost
-                previous[neighbor] = current
                 heapq.heappush(queue, (costs[neighbor], neighbor))
     return costs[current]
 
