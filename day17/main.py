@@ -1,4 +1,5 @@
 from collections import defaultdict
+import heapq
 
 UP = (0, -1)
 DOWN = (0, 1)
@@ -53,13 +54,12 @@ def dijkstra(start: tuple[int, int], direction: tuple[int, int], min_repeat: int
         for _direction in DIRECTIONS:
             costs[(start, _direction, i)] = 0
     
-    queue = [(start, direction, 0)]
+    queue = [(0, (start, direction, 0))]
     goal = (len(heat_loss_map[0]) - 1, len(heat_loss_map) - 1)
     current = [0] # temp
 
     while (current[0] != goal) and queue:
-        queue.sort(key=lambda x: costs[x])
-        current = queue.pop(0)
+        current = heapq.heappop(queue)[1]
         visited.add(current)
 
         for neighbor in neighbors(current, min_repeat, max_repeat, heat_loss_map):
@@ -70,7 +70,7 @@ def dijkstra(start: tuple[int, int], direction: tuple[int, int], min_repeat: int
             if other_cost < costs[neighbor]:
                 costs[neighbor] = other_cost
                 previous[neighbor] = current
-                queue.append(neighbor)
+                heapq.heappush(queue, (costs[neighbor], neighbor))
     return costs[current]
 
 if __name__ == "__main__":
@@ -81,4 +81,4 @@ if __name__ == "__main__":
     heat_loss_map = list(list(int(y) for y in x) for x in data.splitlines())
 
     print("Part 1:", dijkstra((0, 0), RIGHT, 0, 3, heat_loss_map))
-    print("Part 2:", dijkstra((0, 0), RIGHT, 4, 10, heat_loss_map))
+    # print("Part 2:", dijkstra((0, 0), RIGHT, 4, 10, heat_loss_map))
