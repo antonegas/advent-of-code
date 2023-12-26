@@ -39,9 +39,9 @@ def total_rating(rating):
 
 def possible_values(work_flows, work_flow, index, bounds):
     if work_flow == "A":
-        return {bounds["x"]: {bounds["m"]: {bounds["a"]: [bounds["s"]]}}}
+        return reduce(lambda a, b: a * b, [max(0, v[1] - v[0] + 1) for v in bounds.values()])
     elif work_flow == "R":
-        return dict()
+        return 0
     
     current = work_flows[work_flow][index]
     
@@ -54,32 +54,9 @@ def possible_values(work_flows, work_flow, index, bounds):
     value = int(rule[2:])
 
     if condition == ">":
-        return combine_possible_values(
-            possible_values(work_flows, next_key, 0, update_bounds(bounds, key, lower=value + 1)),
-            possible_values(work_flows, work_flow, index + 1, update_bounds(bounds, key, upper=value))
-        )
+        return possible_values(work_flows, next_key, 0, update_bounds(bounds, key, lower=value + 1)) + possible_values(work_flows, work_flow, index + 1, update_bounds(bounds, key, upper=value))
     else: # <
-        return combine_possible_values(
-            possible_values(work_flows, next_key, 0, update_bounds(bounds, key, upper=value - 1)), 
-            possible_values(work_flows, work_flow, index + 1, update_bounds(bounds, key, lower=value))
-        )
-
-def combine_possible_values(values1, values2):
-    # TODO: remove overlaps
-    return dict()
-
-def total_combinations(possible_values):
-    res = 0
-    for x in possible_values:
-        x_range = x[1] - x[0] + 1
-        for m in possible_values[x]:
-            m_range = m[1] - m[0] + 1
-            for a in possible_values[x][m]:
-                a_range = a[1] - a[0] + 1
-                for s in possible_values[x][m][a]:
-                    s_range = s[1] - s[0] + 1
-                    res += x_range * m_range * a_range * s_range
-    pass
+        return possible_values(work_flows, next_key, 0, update_bounds(bounds, key, upper=value - 1)) + possible_values(work_flows, work_flow, index + 1, update_bounds(bounds, key, lower=value))
 
 if __name__ == "__main__":
     import os
@@ -92,4 +69,4 @@ if __name__ == "__main__":
     all_ratings = list({k: int(v) for k, v in list(list(z.split("=")) for z in y)} for y in list(x[1:-1].split(",") for x in all_ratings.split("\n")))
 
     print("Part 1:", sum([total_rating(rating) for rating in all_ratings if accepted(work_flows, rating)]))
-    print("Part 2:", possible_values(work_flows, "in", 0, {k: (1, 4000) for k in ["x", "m", "a", "s"]}))
+    print("Part 2:", possible_values(work_flows, "in", 0, {k: (1, 4000) for k in "xmas"}))
