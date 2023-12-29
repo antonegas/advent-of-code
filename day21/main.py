@@ -5,15 +5,22 @@ def get_starting_point(garden_map):
                 return (x, y)
 
 def get_all_reachable(garden_map, steps):
-    reachable = {get_starting_point(garden_map)}
+    reachable_even = {get_starting_point(garden_map)}
+    reachable_odd = set()
+    new_reachable = reachable_even
 
-    for _ in range(steps):
-        new_reachable = set()
-        for reachable in reachable:
-            new_reachable.update(get_currently_reachable(garden_map, reachable))
-        reachable = new_reachable
+    for i in range(steps):
+        even = (i % 2) == 1
+        reachables = set()
+        for reachable in new_reachable:
+            reachables.update(get_currently_reachable(garden_map, reachable))
+        new_reachable = reachables.difference(reachable_even if even else reachable_odd)
+        if even:
+            reachable_even = reachable_even.union(reachables)
+        else:
+            reachable_odd = reachable_odd.union(reachables)
 
-    return reachable
+    return reachable_even if (steps % 2) == 0 else reachable_odd
 
 def get_currently_reachable(garden_map, coordinate):
     res = list()
