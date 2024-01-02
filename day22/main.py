@@ -20,13 +20,6 @@ def fall(brick, landed_bricks):
     supported_by = [_brick for _brick in overlapping_bricks if _brick[1][2] == (highest_overlapping_point - 1)]
     return landed_brick, supported_by
 
-def is_disintegratable(brick_index, bricks):
-    supports = get_overlapping(brick_index, bricks, True)
-    for supporting in supports:
-        if len(get_overlapping(supporting, bricks, False)) < 2:
-            return False
-    return True
-
 if __name__ == "__main__":
     import os
     __location__ = os.path.realpath(
@@ -37,7 +30,7 @@ if __name__ == "__main__":
     landed_bricks = list()
     can_be_disintegrated = set()
 
-    for brick in bricks:
+    for brick in sorted(bricks, key=lambda x: x[0][2]):
         landed_brick, supported_by = fall(brick, landed_bricks)
         landed_bricks.append(landed_brick)
         can_be_disintegrated.add(landed_brick)
