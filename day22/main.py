@@ -23,6 +23,21 @@ def fall(brick, landed_bricks):
     supported_by = [_brick for _brick in overlapping_bricks if _brick[1][2] == (highest_overlapping_point - 1)]
     return landed_brick, supported_by
 
+def supporting_total(brick, supporting, supported_by):
+    removed = {brick}
+    checked = set()
+    temp = [brick]
+
+    while len(temp) != 0:
+        current = temp.pop(0)
+        checked.add(current)
+        temp.extend(supporting[current])
+        if set(supported_by[current]).issubset(removed):
+            removed.add(current)
+
+    return len(removed) - 1
+
+
 if __name__ == "__main__":
     import os
     __location__ = os.path.realpath(
@@ -37,9 +52,9 @@ if __name__ == "__main__":
     for brick in bricks:
         landed_brick, supporting_bricks = fall(brick, landed_bricks)
         landed_bricks.append(landed_brick)
-        supported_by[brick] = supporting_bricks
+        supported_by[landed_brick] = supporting_bricks
         for supporting_brick in supporting_bricks:
-            supporting[supporting_brick].append(brick)
+            supporting[supporting_brick].append(landed_brick)
 
     print("Part 1:", len(bricks) - len(set(supporting_bricks[0] for supporting_bricks in supported_by.values() if len(supporting_bricks) == 1)))
-    print("Part 2:", 0)
+    print("Part 2:", sum(supporting_total(landed_brick, supporting, supported_by) for landed_brick in landed_bricks))
