@@ -1,3 +1,6 @@
+from collections import defaultdict
+
+
 def is_overlapping(brick1, brick2):
     return ((brick2[0][0] <= brick1[0][0] <= brick2[1][0] or 
             brick2[0][0] <= brick1[1][0] <= brick2[1][0] or
@@ -25,17 +28,18 @@ if __name__ == "__main__":
     __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
     data = open(os.path.join(__location__, "input.txt"), "r").read()
-    bricks = list((tuple(int(z1) for z1 in y1.split(",")), tuple(int(z2) for z2 in y2.split(","))) for y1, y2 in list(x.split("~") for x in data.split("\n")))
+    bricks = sorted(list((tuple(int(z1) for z1 in y1.split(",")), tuple(int(z2) for z2 in y2.split(","))) for y1, y2 in list(x.split("~") for x in data.split("\n"))), key=lambda x: x[0][2])
 
     landed_bricks = list()
-    can_be_disintegrated = set()
+    supported_by = dict()
+    supporting = defaultdict(lambda: list())
 
-    for brick in sorted(bricks, key=lambda x: x[0][2]):
-        landed_brick, supported_by = fall(brick, landed_bricks)
+    for brick in bricks:
+        landed_brick, supporting_bricks = fall(brick, landed_bricks)
         landed_bricks.append(landed_brick)
-        can_be_disintegrated.add(landed_brick)
-        if len(supported_by) == 1:
-            can_be_disintegrated.discard(supported_by[0])
+        supported_by[brick] = supporting_bricks
+        for supporting_brick in supporting_bricks:
+            supporting[supporting_brick].append(brick)
 
-    print("Part 1:", len(can_be_disintegrated))
+    print("Part 1:", len(bricks) - len(set(supporting_bricks[0] for supporting_bricks in supported_by.values() if len(supporting_bricks) == 1)))
     print("Part 2:", 0)
