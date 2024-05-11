@@ -1,5 +1,3 @@
-from collections import defaultdict
-
 def get_paths(forest):
     START = (1, 0)
     END = (len(forest[0]) - 2, len(forest) - 1)
