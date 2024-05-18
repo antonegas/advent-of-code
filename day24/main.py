@@ -59,5 +59,5 @@ if __name__ == "__main__":
     data = open(os.path.join(__location__, "input.txt"), "r").read()
     hail = [[[int(u) for u in z.split(", ")] for z in y.split(" @ ")] for y in data.split("\n")]
 
-    print("Part 1:", sum([len([hail for hail in hail if ])]))
+    print("Part 1:", sum([len([hail for hail in hail])]))
     print("Part 2:", 0)
