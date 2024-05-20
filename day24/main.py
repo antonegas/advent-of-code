@@ -1,17 +1,5 @@
 def does_collide(hail1, hail2, time):
-    p1, v1 = hail1
-    p2, v2 = hail2
-
-    px1, py1, pz1 = p1
-    vx1, vy1, vz1 = v1
-    px2, py2, pz2 = p2
-    vx2, vy2, vz2 = v2
-
-    x_diff = px1 + vx1 * time - px2 + vx2 * time
-    y_diff = py1 + vy1 * time - py2 + vy2 * time
-    z_diff = pz1 + vz1 * time - pz2 + vz2 * time
-
-    return time > 0 and x_diff == y_diff == z_diff == 0
+    return position_from_time(hail1, time) == position_from_time(hail2, time)
 
 
 def intersection_time(hail1, hail2):
@@ -39,6 +27,13 @@ def intersection_time(hail1, hail2):
     else:
         return float("-inf")
 
+def position_from_time(hail, time):
+    p, v = hail
+
+    px, py, pz = p
+    vx, vy, vz = v
+
+    return (px + vx * time, py + vy * time, pz + vz * time)
 
 def in_bound(hail, lower_bound = 7, upper_bound = 27):
     p, _ = hail
