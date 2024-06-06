@@ -1,44 +1,44 @@
-def does_collide(hail1, hail2, time):
-    return position_from_time(hail1, time) == position_from_time(hail2, time)
 
+from itertools import combinations
 
-def intersection_time(hail1, hail2):
+def path_intersection_time(hail1, hail2):
     p1, v1 = hail1
     p2, v2 = hail2
 
-    px1, py1, pz1 = p1
-    vx1, vy1, vz1 = v1
-    px2, py2, pz2 = p2
-    vx2, vy2, vz2 = v2
+    px1, py1, _ = p1
+    vx1, vy1, _ = v1
+    px2, py2, _ = p2
+    vx2, vy2, _ = v2
 
-    vx_diff = vx1 - vx2
-    vy_diff = vy1 - vy2
-    vz_diff = vz1 - vz2
-    px_diff = px1 - px2
-    py_diff = py1 - py2
-    pz_diff = pz1 - pz2
-    
-    if vx_diff != 0:
-        return px_diff / vx_diff
-    elif vy_diff != 0:
-        return py_diff / vy_diff
-    elif vz_diff != 0:
-        return pz_diff / vz_diff
+    A = vx1
+    B = -vx2
+    C = vy1
+    D = -vy2
+    x = px2 - px1
+    y = py2 - py1
+
+    determinant = A * D - B * C
+
+    if determinant == 0:
+        return [float("-inf"), float("-inf")]
     else:
-        return float("-inf")
+        return [
+            (D * x - B * y) / determinant,
+            (A * y - C * x) / determinant
+        ]
+    
 
-def position_from_time(hail, time):
+def hail_at_time(hail, nano_seconds):
     p, v = hail
-
     px, py, pz = p
     vx, vy, vz = v
+    position_at_time = [
+        px + vx * nano_seconds,
+        py + vy * nano_seconds,
+        pz + vz * nano_seconds
+    ]
+    return [position_at_time, v]
 
-    return (px + vx * time, py + vy * time, pz + vz * time)
-
-def in_bound(hail, lower_bound = 7, upper_bound = 27):
-    p, _ = hail
-    x, y, z = p
-    return lower_bound <= x <= upper_bound and lower_bound <= y <= upper_bound and lower_bound <= z <= upper_bound
 
 def ignore_z(hail):
     p, v = hail
@@ -47,6 +47,16 @@ def ignore_z(hail):
     vx, vy, _ = v
     return [[px, py, 0], [vx, vy, 0]]
 
+
+def in_bound(hail, x_bound, y_bound, z_bound):
+    x_min, x_max = x_bound
+    y_min, y_max = y_bound
+    z_min, z_max = z_bound
+    x, y, z = hail[0]
+    
+    return x_min <= x <= x_max and y_min <= y <= y_max and z_min <= z <= z_max 
+    
+
 if __name__ == "__main__":
     import os
     __location__ = os.path.realpath(
@@ -54,5 +64,17 @@ if __name__ == "__main__":
     data = open(os.path.join(__location__, "input.txt"), "r").read()
     hail = [[[int(u) for u in z.split(", ")] for z in y.split(" @ ")] for y in data.split("\n")]
 
-    print("Part 1:", sum([len([hail for hail in hail])]))
-    print("Part 2:", 0)
+    temp = 0
+    BOUNDS = [2e14, 4e14]
+
+    hails_1 = [ignore_z(_hail) for _hail in hail]
+
+    for hail1, hail2 in combinations(hails_1, 2):
+        t1, t2 = path_intersection_time(hail1, hail2)
+        moved_hail1 = hail_at_time(hail1, t1)
+        moved_hail2 = hail_at_time(hail2, t2)
+        if in_bound(moved_hail1, BOUNDS, BOUNDS,[0, 0]) and t1 >= 0 and t2 >= 0:
+            temp += 1        
+
+    print("Part 1:", temp)
+    # print("Part 2:", 0)
