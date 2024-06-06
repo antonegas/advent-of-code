@@ -64,17 +64,5 @@ if __name__ == "__main__":
     data = open(os.path.join(__location__, "input.txt"), "r").read()
     hail = [[[int(u) for u in z.split(", ")] for z in y.split(" @ ")] for y in data.split("\n")]
 
-    temp = 0
-    BOUNDS = [2e14, 4e14]
-
-    hails_1 = [ignore_z(_hail) for _hail in hail]
-
-    for hail1, hail2 in combinations(hails_1, 2):
-        t1, t2 = path_intersection_time(hail1, hail2)
-        moved_hail1 = hail_at_time(hail1, t1)
-        moved_hail2 = hail_at_time(hail2, t2)
-        if in_bound(moved_hail1, BOUNDS, BOUNDS,[0, 0]) and t1 >= 0 and t2 >= 0:
-            temp += 1        
-
-    print("Part 1:", temp)
+    print("Part 1:", sum([len(list(0 for hail1, t1, t2 in list([hail1] + path_intersection_time(hail1, hail2) for hail2 in [ignore_z(_hail) for _hail in hail[i + 1:]]) if t1 >= 0 and t2 >= 0 and in_bound(hail_at_time(hail1, t1), [2e14, 2e14], [2e14, 2e14], [0, 0]))) for i, hail1 in enumerate([ignore_z(_hail) for _hail in hail])]))
     # print("Part 2:", 0)
