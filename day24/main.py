@@ -28,6 +28,18 @@ def path_intersection_time(hail1, hail2):
         ]
     
 
+def total_intersections(hail, bounds = (2e14, 4e14)):
+    res = 0
+
+    for hail1, hail2 in combinations([ignore_z(_hail) for _hail in hail], 2):
+        t1, t2 = path_intersection_time(hail1, hail2)
+        moved_hail1 = hail_at_time(hail1, t1)
+        if in_bound(moved_hail1, bounds, bounds, (0, 0)) and t1 >= 0 and t2 >= 0:
+            res += 1
+
+    return res
+    
+
 def hail_at_time(hail, nano_seconds):
     p, v = hail
     px, py, pz = p
@@ -62,21 +74,7 @@ if __name__ == "__main__":
     __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
     data = open(os.path.join(__location__, "input.txt"), "r").read()
-    hail = [[[int(u) for u in z.split(", ")] for z in y.split(" @ ")] for y in data.split("\n")]
+    hail = [[[int(u) for u in z.split(", ")] for z in y.split(" @ ")] for y in data.split("\n")]  
 
-    temp = 0
-    BOUNDS = [2e14, 4e14]
-
-    hails_1 = [ignore_z(_hail) for _hail in hail]
-
-
-
-    for hail1, hail2 in combinations(hails_1, 2):
-        t1, t2 = path_intersection_time(hail1, hail2)
-        moved_hail1 = hail_at_time(hail1, t1)
-        moved_hail2 = hail_at_time(hail2, t2)
-        if in_bound(moved_hail1, BOUNDS, BOUNDS,[0, 0]) and t1 >= 0 and t2 >= 0:
-            temp += 1    
-
-    print("Part 1:", temp)
+    print("Part 1:", total_intersections(hail))
     # print("Part 2:", 0)
