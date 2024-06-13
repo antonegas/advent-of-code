@@ -26,7 +26,6 @@ def path_intersection_time(hail1, hail2):
             (D * x - B * y) / determinant,
             (A * y - C * x) / determinant
         ]
-    
 
 def total_intersections(hail, bounds = (2e14, 4e14)):
     res = 0
@@ -37,8 +36,7 @@ def total_intersections(hail, bounds = (2e14, 4e14)):
         if in_bound(moved_hail1, bounds, bounds, (0, 0)) and t1 >= 0 and t2 >= 0:
             res += 1
 
-    return res
-    
+    return res 
 
 def hail_at_time(hail, nano_seconds):
     p, v = hail
@@ -51,14 +49,12 @@ def hail_at_time(hail, nano_seconds):
     ]
     return [position_at_time, v]
 
-
 def ignore_z(hail):
     p, v = hail
 
     px, py, _ = p
     vx, vy, _ = v
     return [[px, py, 0], [vx, vy, 0]]
-
 
 def in_bound(hail, x_bound, y_bound, z_bound):
     x_min, x_max = x_bound
@@ -67,7 +63,6 @@ def in_bound(hail, x_bound, y_bound, z_bound):
     x, y, z = hail[0]
     
     return x_min <= x <= x_max and y_min <= y <= y_max and z_min <= z <= z_max 
-
 
 def perfect_throw(hail):
     matrix, y = get_equation_matrix(hail)
@@ -94,7 +89,6 @@ def perfect_throw(hail):
     pzr = pz1 + t1 * (vz1 - vzr)
 
     return [[pxr, pyr, pzr], [vxr, vyr, vzr]]
-
 
 def get_equation_matrix(hail):
     hail0, hail1, hail2, hail3, hail4, hail5, hail6, hail7, *_ = hail
@@ -141,7 +135,6 @@ def get_equation_matrix(hail):
 
     return matrix, y
 
-
 def determinant4x4(matrix):
     a, b, c, d = matrix
     a1, a2, a3, a4 = a
@@ -150,7 +143,6 @@ def determinant4x4(matrix):
     d1, d2, d3, d4 = d
 
     return a2 * b4 * c3 * d1 - a2 * b3 * c4 * d1 - a1 * b4 * c3 * d2 + a1 * b3 * c4 * d2 - a2 * b4 * c1 * d3 + a1 * b4 * c2 * d3 + a2 * b1 * c4 * d3 - a1 * b2 * c4 * d3 + a4 * (b3 * (c2 * d1 - c1 * d2) + b2 * (c1 * d3 - c3 * d1) + b1 * (c3 * d2 - c2 * d3)) + a2 * b3 * c1 * d4 - a1 * b3 * c2 * d4 - a2 * b1 * c3 * d4 + a1 * b2 * c3 * d4 + a3 * (b4 * (c1 * d2 - c2 * d1) + b2 * (c4 * d1 - c1 * d4) + b1 * (c2 * d4 - c4 * d2))
-
 
 def x1(matrix, y, det):
     a, b, c, d = matrix
@@ -169,7 +161,6 @@ def x1(matrix, y, det):
 
     return determinant4x4(matrix1) // det
 
-
 def x2(matrix, y, det):
     a, b, c, d = matrix
     a1, _, a3, a4 = a
@@ -186,7 +177,6 @@ def x2(matrix, y, det):
     ]
 
     return determinant4x4(matrix2) // det
-
 
 def x3(matrix, y, det):
     a, b, c, d = matrix
@@ -205,7 +195,6 @@ def x3(matrix, y, det):
 
     return determinant4x4(matrix3) // det
 
-
 def x4(matrix, y, det):
     a, b, c, d = matrix
     a1, a2, a3, _ = a
@@ -222,7 +211,6 @@ def x4(matrix, y, det):
     ]
 
     return determinant4x4(matrix4) // det
-
 
 if __name__ == "__main__":
     import os

@@ -13,6 +13,15 @@ def get_graph(wiring_diagram):
 
     return res
 
+def get_weigthed_graph(wiring_diagram):
+    res = defaultdict(lambda: defaultdict(lambda: 0))
+
+    for key_component, connected_components in wiring_diagram.items():
+        for connected_component in connected_components:
+            res[key_component].add(connected_component)
+            res[connected_component].add(key_component)
+
+    return res
 
 def get_group_size(wiring_graph, start):
     queue = list()
@@ -43,7 +52,6 @@ def get_cuts(wiring_graph, deterministic=False):
         return stoer_wagner(wiring_graph)
     else:
         return monte_carlo(wiring_graph)
-    
 
 def remove_cut(wiring_graph, cut):
     res = deepcopy(wiring_graph)
@@ -54,7 +62,6 @@ def remove_cut(wiring_graph, cut):
 
     return res
 
-
 def remove_cuts(wiring_graph, cuts):
     res = wiring_graph
 
@@ -62,7 +69,6 @@ def remove_cuts(wiring_graph, cuts):
         res = remove_cut(res, cut)
 
     return res
-
 
 def monte_carlo(wiring_graph):
     uses = defaultdict(lambda: 0)
@@ -89,8 +95,6 @@ def monte_carlo(wiring_graph):
             break
 
     return sorted(uses.keys(), key=lambda x: uses[x])[-3:]
-
-
 
 def get_path(wiring_graph, start, end):
     queue = list()
@@ -122,10 +126,8 @@ def get_path(wiring_graph, start, end):
 
     return path
 
-
 def stoer_wagner(wiring_graph):
     pass
-
 
 if __name__ == "__main__":
     import os
