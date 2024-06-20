@@ -4,22 +4,14 @@ from copy import deepcopy
 from math import prod
 
 def get_graph(wiring_diagram):
-    res = defaultdict(lambda: set())
+    res = defaultdict(lambda: dict())
 
     for key_component, connected_components in wiring_diagram.items():
         for connected_component in connected_components:
-            res[key_component].add(connected_component)
-            res[connected_component].add(key_component)
-
-    return res
-
-def get_weigthed_graph(wiring_diagram):
-    res = defaultdict(lambda: defaultdict(lambda: 0))
-
-    for key_component, connected_components in wiring_diagram.items():
-        for connected_component in connected_components:
-            res[key_component].add(connected_component)
-            res[connected_component].add(key_component)
+            # res[key_component][connected_component] = 1
+            # res[connected_component][key_component] = 1
+            res[(key_component,)][(connected_component,)] = 1
+            res[(connected_component,)][(key_component,)] = 1
 
     return res
 
@@ -42,8 +34,8 @@ def get_group_size(wiring_graph, start):
 def get_group_sizes(wiring_diagram, deterministic=False):
     wiring_graph = get_graph(wiring_diagram)
     cuts = get_cuts(wiring_graph, deterministic)
-    wiring_graph = remove_cuts(wiring_graph, cuts)
     first_cut = cuts[0]
+    wiring_graph = remove_cuts(wiring_graph, cuts)
 
     return get_group_size(wiring_graph, first_cut[0]), get_group_size(wiring_graph, first_cut[1])
 
@@ -57,8 +49,8 @@ def remove_cut(wiring_graph, cut):
     res = deepcopy(wiring_graph)
     component1, component2 = cut
 
-    res[component1].discard(component2)
-    res[component2].discard(component1)
+    res[component1].pop(component2)
+    res[component2].pop(component1)
 
     return res
 
@@ -127,7 +119,44 @@ def get_path(wiring_graph, start, end):
     return path
 
 def stoer_wagner(wiring_graph):
+    merged_nodes = defaultdict(lambda: set())
+    current_wiring_graph = wiring_graph
+    current_best_cut = ()
+    current_best_cost = float("inf")
+
+    while len(current_wiring_graph) > 1:
+        cut, cost = minimum_cut_phase(current_wiring_graph, merged_nodes)
+        if cost < current_best_cost:
+            current_best_cut = cut
+            current_best_cost = cost
+    
+    return current_best_cut
+
+def minimum_cut_phase(wiring_graph, merged_nodes):
+    start = next(iter(wiring_graph))
+    A = {start}
+    last_added = start
+
+    while A != wiring_graph.keys():
+        A.add(most_tightly_connected(wiring_graph, A))
+
+def cut_of_the_phase(wiring_graph, A):
     pass
+
+def most_tightly_connected(wiring_graph, checked):
+    connected = get_connected(wiring_graph, checked)
+
+    return max(connected, key=lambda x: connected[x])
+
+def get_connected(wiring_graph, merged):
+    connected = defaultdict(lambda: 0)
+
+    for key in merged:
+        for connection in wiring_graph[key]:
+            if connection not in merged:
+                connected[connection] += wiring_graph[connection]
+
+    return connected
 
 if __name__ == "__main__":
     import os
@@ -135,12 +164,6 @@ if __name__ == "__main__":
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
     data = open(os.path.join(__location__, "input.txt"), "r").read()
     wiring_diagram = {k: list(v.split()) for k, v in [x.split(":") for x in data.split("\n")]}
-
-    # wiring_graph = get_graph(wiring_diagram)
-
-    # wiring_graph = remove_cut(wiring_graph, ("hfx", "pzl"))
-    # wiring_graph = remove_cut(wiring_graph, ("bvb", "cmg"))
-    # wiring_graph = remove_cut(wiring_graph, ("nvd", "jqt"))
 
     print("Part 1:", prod(get_group_sizes(wiring_diagram, deterministic=False)))
     print("Part 2:", 0)
