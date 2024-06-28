@@ -4,14 +4,12 @@ from copy import deepcopy
 from math import prod
 
 def get_graph(wiring_diagram):
-    res = defaultdict(lambda: dict())
+    res = defaultdict(lambda: defaultdict(lambda: 0))
 
     for key_component, connected_components in wiring_diagram.items():
         for connected_component in connected_components:
-            # res[key_component][connected_component] = 1
-            # res[connected_component][key_component] = 1
-            res[(key_component,)][(connected_component,)] = 1
-            res[(connected_component,)][(key_component,)] = 1
+            res[key_component][connected_component] = 1
+            res[connected_component][key_component] = 1
 
     return res
 
@@ -121,49 +119,86 @@ def get_path(wiring_graph, start, end):
 def stoer_wagner(wiring_graph):
     merged_nodes = defaultdict(lambda: set())
     current_wiring_graph = wiring_graph
-    current_best_cut = ()
+    current_best_cut = set()
     current_best_cost = float("inf")
 
     while len(current_wiring_graph) > 1:
-        cut, cost = minimum_cut_phase(current_wiring_graph, merged_nodes)
+        current_wiring_graph, merged_nodes, cut, cost = minimum_cut_phase(current_wiring_graph, merged_nodes)
+        print(cost)
         if cost < current_best_cost:
+            print("less")
+            print(cut)
+            print(current_wiring_graph)
             current_best_cut = cut
             current_best_cost = cost
     
-    return current_best_cut
+    print(current_best_cut)
+    return tuple(current_best_cut)
 
 def minimum_cut_phase(wiring_graph, merged_nodes):
+    temp_graph = deepcopy(wiring_graph)
+    temp_merged = deepcopy(merged_nodes)
     start = next(iter(wiring_graph))
-    A = {start}
+    second_last_added = None
     last_added = start
 
-    while A != wiring_graph.keys():
-        A.add(most_tightly_connected(wiring_graph, A))
+    while len(temp_graph) > 1:
+        if len(temp_graph) % 100 == 0:
+            print(len(temp_graph))
 
-def cut_of_the_phase(wiring_graph, A):
-    pass
+        second_last_added = last_added
+        last_added = most_tightly_connected(temp_graph, start)
+        temp_graph, temp_merged = merge_nodes(temp_graph, temp_merged, (start, last_added))
 
-def most_tightly_connected(wiring_graph, checked):
-    connected = get_connected(wiring_graph, checked)
+    vertex_to_merge = (last_added, second_last_added)
+    res_graph, res_merged = merge_nodes(wiring_graph, merged_nodes, vertex_to_merge)
+    res_cut, res_cost = cut_of_the_phase(wiring_graph, start)
+    
+    return res_graph, res_merged, res_cut, res_cost
 
-    return max(connected, key=lambda x: connected[x])
+def most_tightly_connected(wiring_graph, key):
+    return max(wiring_graph[key].keys(), key=lambda x: wiring_graph[key][x])
 
-def get_connected(wiring_graph, merged):
-    connected = defaultdict(lambda: 0)
+def cut_of_the_phase(wiring_graph, start):
+    cut = set()
+    cost = 0
+    A = wiring_graph[start].keys()
 
-    for key in merged:
-        for connection in wiring_graph[key]:
-            if connection not in merged:
-                connected[connection] += wiring_graph[connection]
+    for key in A:
+        not_in_a = set(wiring_graph[key].keys()).difference(A)
+        for other_key in not_in_a:
+            cost += wiring_graph[key][other_key]
+            cut.add((key, other_key))
+    
+    return cut, cost
 
-    return connected
+def merge_nodes(wiring_graph, merged_nodes, vertex):
+    node1, node2 = vertex
+    copied_wiring_graph = deepcopy(wiring_graph)
+    copied_merged_nodes = deepcopy(merged_nodes)
+
+    copied_wiring_graph[node1].pop(node2, None)
+    node2_connections = copied_wiring_graph.pop(node2, dict())
+
+    for key, value in node2_connections.items():
+        copied_wiring_graph[node1][key] += value
+        copied_wiring_graph[key].pop(node2, None)
+        copied_wiring_graph[key][node1] = copied_wiring_graph[node1][key]
+
+    node2_merged = copied_merged_nodes.pop(node2, set())
+
+    copied_merged_nodes[node1].add(node2)
+    copied_merged_nodes[node1].union(node2_merged)
+
+    return copied_wiring_graph, copied_merged_nodes
 
 if __name__ == "__main__":
     import os
     __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    data = open(os.path.join(__location__, "input.txt"), "r").read()
+    data = open(os.path.join(__location__, "input_ex.txt"), "r").read()
     wiring_diagram = {k: list(v.split()) for k, v in [x.split(":") for x in data.split("\n")]}
 
     print("Part 1:", prod(get_group_sizes(wiring_diagram, deterministic=False)))
+    print("Part 1:", prod(get_group_sizes(wiring_diagram, deterministic=True)))
     print("Part 2:", 0)
