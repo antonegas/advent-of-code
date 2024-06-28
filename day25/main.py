@@ -123,16 +123,13 @@ def stoer_wagner(wiring_graph):
     current_best_cost = float("inf")
 
     while len(current_wiring_graph) > 1:
-        current_wiring_graph, merged_nodes, cut, cost = minimum_cut_phase(current_wiring_graph, merged_nodes)
-        print(cost)
+        current_wiring_graph, merged_nodes, A = minimum_cut_phase(current_wiring_graph, merged_nodes)
+        cut, cost = cut_of_the_phase(wiring_graph, A)
+
         if cost < current_best_cost:
-            print("less")
-            print(cut)
-            print(current_wiring_graph)
             current_best_cut = cut
             current_best_cost = cost
-    
-    print(current_best_cut)
+
     return tuple(current_best_cut)
 
 def minimum_cut_phase(wiring_graph, merged_nodes):
@@ -141,36 +138,33 @@ def minimum_cut_phase(wiring_graph, merged_nodes):
     start = next(iter(wiring_graph))
     second_last_added = None
     last_added = start
+    print("min phase", len(wiring_graph))
 
     while len(temp_graph) > 1:
-        if len(temp_graph) % 100 == 0:
-            print(len(temp_graph))
-
         second_last_added = last_added
         last_added = most_tightly_connected(temp_graph, start)
         temp_graph, temp_merged = merge_nodes(temp_graph, temp_merged, (start, last_added))
 
     vertex_to_merge = (last_added, second_last_added)
     res_graph, res_merged = merge_nodes(wiring_graph, merged_nodes, vertex_to_merge)
-    res_cut, res_cost = cut_of_the_phase(wiring_graph, start)
+    A = {start}.union(temp_merged[start]).difference({last_added})
     
-    return res_graph, res_merged, res_cut, res_cost
+    return res_graph, res_merged, A
 
 def most_tightly_connected(wiring_graph, key):
     return max(wiring_graph[key].keys(), key=lambda x: wiring_graph[key][x])
 
-def cut_of_the_phase(wiring_graph, start):
+def cut_of_the_phase(wiring_graph, A):
     cut = set()
     cost = 0
-    A = wiring_graph[start].keys()
 
     for key in A:
         not_in_a = set(wiring_graph[key].keys()).difference(A)
         for other_key in not_in_a:
-            cost += wiring_graph[key][other_key]
+            cost += 1
             cut.add((key, other_key))
     
-    return cut, cost
+    return cut, len(cut)
 
 def merge_nodes(wiring_graph, merged_nodes, vertex):
     node1, node2 = vertex
@@ -178,6 +172,7 @@ def merge_nodes(wiring_graph, merged_nodes, vertex):
     copied_merged_nodes = deepcopy(merged_nodes)
 
     copied_wiring_graph[node1].pop(node2, None)
+    copied_wiring_graph[node2].pop(node1, None)
     node2_connections = copied_wiring_graph.pop(node2, dict())
 
     for key, value in node2_connections.items():
@@ -196,9 +191,9 @@ if __name__ == "__main__":
     import os
     __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    data = open(os.path.join(__location__, "input_ex.txt"), "r").read()
+    data = open(os.path.join(__location__, "input.txt"), "r").read()
     wiring_diagram = {k: list(v.split()) for k, v in [x.split(":") for x in data.split("\n")]}
 
     print("Part 1:", prod(get_group_sizes(wiring_diagram, deterministic=False)))
-    print("Part 1:", prod(get_group_sizes(wiring_diagram, deterministic=True)))
+    # print("Part 1:", prod(get_group_sizes(wiring_diagram, deterministic=True)))
     print("Part 2:", 0)
