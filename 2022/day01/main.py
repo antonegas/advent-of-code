@@ -5,14 +5,5 @@ if __name__ == "__main__":
     data = open(os.path.join(__location__, "input.txt"), "r").read()
     e = [sum([int(y) for y in x.split("\n")]) for x in data.split("\n\n")]
 
-    r = 0
-
-    for i in range(3):
-        v = max(e)
-        r += v
-        e[e.index(v)] = 0
-
-
-
     print("Part 1:", max(e))
-    print("Part 2:", r)
+    print("Part 2:", sum(sorted(e)[-3:]))
