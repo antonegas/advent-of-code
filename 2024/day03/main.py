@@ -19,7 +19,7 @@ if __name__ == "__main__":
         elif m[1]:
             do = False
         elif do and m[2]:
-            p2+= int(t[0]) * int(t[1])
+            p2 += int(t[0]) * int(t[1])
         if m[2]:
             p1 += int(t[0]) * int(t[1])
 
