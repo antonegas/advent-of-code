@@ -5,48 +5,42 @@ if __name__ == "__main__":
     __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
     data = open(os.path.join(__location__, "input.txt"), "r").read()
-    g = list(data.split("\n\n"))
+    rules, updates = list(data.split("\n\n"))
 
-    dic = defaultdict(lambda: set())
+    rules_dictionary = defaultdict(lambda: set())
 
-    for e in g[0].split("\n"):
-        k, v = e.split("|")
-        dic[int(k)].add(int(v))
+    for rule in rules.split("\n"):
+        before, after = rule.split("|")
+        rules_dictionary[int(before)].add(int(after))
 
-    us = [[int(y) for y in x.split(",")] for x in g[1].split("\n")]
+    update_lists = [[int(y) for y in x.split(",")] for x in updates.split("\n")]
 
+    part1 = 0
+    part2 = 0
 
-    p1 = 0
-    p2 = 0
+    for update in update_lists:
+        changed = False
+        checked = set()
+        fixed_update = list()
 
-    for u in us:
-        a = True
-        c = set()
-        fix = list()
-        for i in range(len(u)):
-            n = u[i]
-            isec = dic[n].intersection(c)
-            if len(isec) > 0:
-                eir = 100000000
-                for s in isec:
+        for page_number in update:
+            misplaced_pages = rules_dictionary[page_number].intersection(checked)
 
-                    idx = fix.index(s)
-                    if idx < eir:
-                        eir = idx
-                fix.insert(eir, n)
-                c.add(n)
-                a = False
+            if len(misplaced_pages):
+                changed = True
+                insertion_index = min([fixed_update.index(misplaced_page) for misplaced_page in misplaced_pages])
+                fixed_update.insert(insertion_index, page_number)
             else:
-                c.add(n)
-                fix.append(n)
-
-        if a:
-            t = u[int((len(u) - 1) / 2)]
+                fixed_update.append(page_number)
             
-            p1 += t
-        else:
-            t2 = fix[int((len(fix) - 1) / 2)]
-            p2 += t2
+            checked.add(page_number)
 
-    print("Part 1:", p1)
-    print("Part 2:", p2)
+        middle_index = int((len(fixed_update) - 1) / 2)
+
+        if changed:
+            part2 += fixed_update[middle_index]
+        else:
+            part1 += fixed_update[middle_index]
+
+    print("Part 1:", part1)
+    print("Part 2:", part2)
