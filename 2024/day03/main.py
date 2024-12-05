@@ -7,8 +7,6 @@ if __name__ == "__main__":
     data = open(os.path.join(__location__, "input.txt"), "r").read()
     ms = re.findall(r"(do\(\))|(don\'t\(\))|(mul\([0-9]+,[0-9]+\))", data)
 
-    print(ms)
-
     p1 = 0
     p2 = 0
 
