@@ -72,13 +72,13 @@ if __name__ == "__main__":
     data = open(os.path.join(__location__, "input.txt"), "r").read()
     grid = [x for x in data.split("\n")]
 
-    p1 = 0
-    p2 = 0
+    part1 = 0
+    part2 = 0
 
     for x in range(len(grid[0])):
         for y in range(len(grid)):
-            p1 += xmas(grid, x, y)
-            p2 += x_mas(grid, x, y)
+            part1 += xmas(grid, x, y)
+            part2 += x_mas(grid, x, y)
 
-    print("Part 1:", p1)
-    print("Part 2:", p2)
+    print("Part 1:", part1)
+    print("Part 2:", part2)

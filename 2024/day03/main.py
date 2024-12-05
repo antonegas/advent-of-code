@@ -7,8 +7,8 @@ if __name__ == "__main__":
     data = open(os.path.join(__location__, "input.txt"), "r").read()
     ms = re.findall(r"(do\(\))|(don\'t\(\))|(mul\([0-9]+,[0-9]+\))", data)
 
-    p1 = 0
-    p2 = 0
+    part1 = 0
+    part2 = 0
 
     do = True
 
@@ -19,9 +19,9 @@ if __name__ == "__main__":
         elif m[1]:
             do = False
         elif do and m[2]:
-            p2 += int(t[0]) * int(t[1])
+            part2 += int(t[0]) * int(t[1])
         if m[2]:
-            p1 += int(t[0]) * int(t[1])
+            part1 += int(t[0]) * int(t[1])
 
-    print("Part 1:", p1)
-    print("Part 2:", p2)
+    print("Part 1:", part1)
+    print("Part 2:", part2)
