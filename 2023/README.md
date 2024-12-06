@@ -1,5 +1,5 @@
 # advent-of-code
-All my advent of code solutions
+All my advent of code solutions for 2023
 
 # Notes
 - main.py for a given day is almost always my initial solution and main2.py is my attempt at making it more efficient.
