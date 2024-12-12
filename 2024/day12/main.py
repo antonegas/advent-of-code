@@ -1,3 +1,6 @@
+from collections import defaultdict
+
+
 def in_bound(g, c):
     x, y = c
     return x >= 0 and y >= 0 and x < len(g[0]) and y < len(g)
@@ -22,6 +25,27 @@ def dfs(m, x, y, v):
 
     return res, res_p
 
+def in_parameter(x, y, a):
+    res = 4
+    for p in [(x+1,y),(x-1,y),(x,y+1),(x,y-1)]:
+        if p in a:
+            res -= 1
+
+    return res > 0
+
+def count_corners(a):
+    res = 0
+
+    for square in a:
+        x, y = square
+        for dx, dy in [(-1, -1), (1, -1), (1, 1), (-1, 1)]:
+            if (x + dx, y) not in a and (x, y + dy) not in a:
+                res += 1
+            elif (x + dx, y) in a and (x, y + dy) in a and (x + dx, y + dy) not in a:
+                res += 1
+
+    return res
+
 if __name__ == "__main__":
     import os
     __location__ = os.path.realpath(
@@ -39,6 +63,7 @@ if __name__ == "__main__":
             if (x, y) not in visited:
                 a, p = dfs(garden_plots, x, y, visited)
                 part1 += len(a) * p
+                part2 += len(a) * count_corners(a)
 
     print("Part 1:", part1)
     print("Part 2:", part2)
