@@ -1,6 +1,3 @@
-from collections import defaultdict
-
-
 def in_bound(g, c):
     x, y = c
     return x >= 0 and y >= 0 and x < len(g[0]) and y < len(g)
