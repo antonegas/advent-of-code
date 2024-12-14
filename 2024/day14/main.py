@@ -1,4 +1,3 @@
-from collections import defaultdict
 from functools import reduce
 import re
 from math import floor, ceil
@@ -24,6 +23,34 @@ def position_in_nseconds(width, height, robot, n):
     yn = (y0 + dy * n) % height
     return xn, yn
 
+def save_tree_image(width, height, robot_positions):
+    try:
+        import png # pip install pypng
+    except:
+        return
+    
+    grid = [[0 for _ in range(width)] for _ in range(height)]
+
+    for position in robot_positions:
+        x, y = position
+        grid[y][x] += 1
+
+    tree = list()
+
+    for y in grid:
+        r = list()
+        for x in y:
+            if x > 0:
+                r.append(1)
+            else:
+                r.append(0)
+        tree.append(r)
+    
+    writer = png.Writer(width=width, height=height, bitdepth=1)
+
+    with open(os.path.join(__location__, "tree.png"), 'wb') as f:
+        writer.write(f, tree)
+
 if __name__ == "__main__":
     import os
     __location__ = os.path.realpath(
@@ -45,13 +72,14 @@ if __name__ == "__main__":
         if quadrant >= 0:
             quadrants[quadrant] += 1
 
-    xns = set()
+    different_positions = set()
 
-    while len(xns) != len(robots):
+    while len(different_positions) != len(robots):
         part2 += 1
-        xns = set()
+        different_positions = set()
         for robot in robots:
-            xns.add(position_in_nseconds(WIDTH, HEIGHT, robot, part2))
+            different_positions.add(position_in_nseconds(WIDTH, HEIGHT, robot, part2))
 
     print("Part 1:", reduce(lambda x, y: x * y, quadrants))
     print("Part 2:", part2)
+    save_tree_image(WIDTH, HEIGHT, different_positions)
