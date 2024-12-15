@@ -1,34 +1,34 @@
 import re
 
-def move(robot, direction, walls, boxes):
-    boxes_to_move = boxes_infront(robot, direction, boxes)
+def move(robot, direction, warehouse):
+    boxes_to_move = get_boxes_infront(robot, direction, warehouse)
 
-    if move_boxes_infront(boxes_to_move, direction, walls, boxes):
-        return move_robot(robot, direction, walls)
+    if move_boxes(boxes_to_move, direction, warehouse):
+        return move_robot(robot, direction, warehouse)
     return robot
 
-def boxes_infront(robot, direction, boxes):
+def get_boxes_infront(robot, direction, warehouse):
     res = list()
     x, y = robot
     dx, dy = direction
     x += dx
     y += dy
 
-    while boxes[y][x]:
+    while warehouse[y][x] == "O":
         res.append((x, y))
         x += dx
         y += dy
 
     return res
 
-def move_boxes_infront(boxes_infront, direction, walls, boxes):
-    if len(boxes_infront) == 0:
+def move_boxes(boxes, direction, warehouse):
+    if len(boxes) == 0:
         return True
     
     dx, dy = direction
 
-    first = boxes_infront[0]
-    last = boxes_infront[-1]
+    first = boxes[0]
+    last = boxes[-1]
 
     first_x, first_y = first
     last_x, last_y = last
@@ -36,20 +36,20 @@ def move_boxes_infront(boxes_infront, direction, walls, boxes):
     last_x += dx
     last_y += dy
 
-    if not walls[last_y][last_x]:
-        boxes[first_y][first_x] = False
-        boxes[last_y][last_x] = True
+    if warehouse[last_y][last_x] != "#":
+        warehouse[first_y][first_x] = "."
+        warehouse[last_y][last_x] = "O"
         return True
     return False
 
-def move_robot(robot, direction, walls):
+def move_robot(robot, direction, warehouse):
     x, y = robot
     dx, dy = direction
 
     x += dx
     y += dy
 
-    if walls[y][x]:
+    if warehouse[y][x] == "#":
         return robot
     return (x, y)
 
@@ -67,16 +67,16 @@ if __name__ == "__main__":
     data = open(os.path.join(__location__, "input.txt"), "r").read()
     m, d = data.split("\n\n")
 
-    ddic = {
+    direction_dictionary = {
         "^": (0, -1),
         "v": (0, 1),
         "<": (-1, 0),
         ">": (1, 0)
     }
 
-    walls = [[x == "#" for x in y] for y in m.split("\n")]
-    boxes = [[x == "O" for x in y] for y in m.split("\n")]
-    directions = [ddic[direction] for direction in d if direction != "\n"]
+    warehouse = [[x if x != "@" else "." for x in y] for y in m.split("\n")]
+
+    directions = [direction_dictionary[direction] for direction in d if direction != "\n"]
     robot = (0, 0)
 
     for y, l in enumerate(m.split("\n")):
@@ -90,29 +90,12 @@ if __name__ == "__main__":
     part1 = 0
     part2 = 0
 
-    # print(widen(m))
-
-    # for y in range(len(walls)):
-    #     r = ""
-    #     for x in range(len(walls[0])):
-    #         if (x, y) == robot:
-    #             r += "@"
-    #         # elif boxes[y][x]:
-    #         #     r += "O"
-    #         elif walls[y][x]:
-    #             r += "#"
-    #         else:
-    #             r += "."
-    #     print(r)
-
-    # print(robot)
-
     for direction in directions:
-        robot = move(robot, direction, walls, boxes)
+        robot = move(robot, direction, warehouse)
 
-    for y, l in enumerate(boxes):
+    for y, l in enumerate(warehouse):
         for x, c in enumerate(l):
-            if c:
+            if c == "O":
                 part1 += y * 100 + x
 
     print("Part 1:", part1)
