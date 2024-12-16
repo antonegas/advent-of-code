@@ -88,8 +88,8 @@ def dijkstra2(best_cost: int, start: tuple[int, int], end: tuple[int, int], maze
         moved3 = move(direction3, coordinate)
 
         add2(queue, visited, cost + 1, moved, direction, path + [moved], maze)
-        add2(queue, visited, cost + 1000, moved2, direction2, path + [moved2], maze)
-        add2(queue, visited, cost + 1000, moved3, direction3, path + [moved3], maze)
+        add2(queue, visited, cost + 1001, moved2, direction2, path + [moved2], maze)
+        add2(queue, visited, cost + 1001, moved3, direction3, path + [moved3], maze)
     
     return path_tiles
 
