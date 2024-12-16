@@ -28,6 +28,7 @@ def add1(queue, visited, cost, coordinate, direction, maze):
     state = (coordinate, direction)
     if state in visited:
         return
+    visited.add(state)
     to_add = (cost, coordinate, direction)
     heappush(queue, to_add)
 
@@ -53,7 +54,6 @@ def dijkstra1(start: tuple[int, int], end: tuple[int, int], maze: list[list[str]
         current = heappop(queue)
         visited.add(current[1:])
         cost, coordinate, direction = current
-        visited.add((coordinate, direction))
 
         add1(queue, visited, cost + 1, move(direction, coordinate), direction, maze)
         add1(queue, visited, cost + 1000, coordinate, rotate(direction, True), maze)
@@ -119,16 +119,6 @@ if __name__ == "__main__":
 
     part1 = dijkstra1(start, end, maze)
     part2 = len(dijkstra2(part1, start, end, maze))
-
-    # for y, l in enumerate(maze):
-    #     r = ""
-    #     for x, c in enumerate(l):
-    #         if (x, y) in part2:
-    #             r += "O"
-    #         else:
-    #             r += c
-    #     print(r)
-
 
     print("Part 1:", part1)
     print("Part 2:", part2)
