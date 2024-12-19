@@ -29,11 +29,7 @@ if __name__ == "__main__":
     __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
     data = open(os.path.join(__location__, "input.txt"), "r").read()
-    towels_data, designs_data = data.split("\n\n")
-
-    towels = tuple(towels_data.split(", "))
-    designs = tuple(designs_data.split("\n"))
-
+    towels, designs = [(tuple(x.split(", ")), tuple(y.split("\n"))) for x, y in [tuple(data.split("\n\n"))]][0]
 
     print("Part 1:", len([design for design in designs if dfs1(towels, design)]))
     print("Part 2:", sum([dfs2(towels, design) for design in designs]))
