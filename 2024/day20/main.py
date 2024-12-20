@@ -44,10 +44,8 @@ if __name__ == "__main__":
     for tile1 in steps:
         x, y = tile1
         for dy in range(-20, 21):
-            for dx in range(-20, 21):
+            for dx in range(-(20 - abs(dy)), 21 - abs(dy)):
                 diff = abs(dx) + abs(dy)
-                if diff > 20:
-                    continue
                 tile2 = (x + dx, y + dy)
                 if tile2 not in steps:
                     continue
