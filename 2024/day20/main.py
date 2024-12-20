@@ -1,7 +1,6 @@
 from collections import defaultdict
 from itertools import combinations
 
-
 def in_bound(width, height, coord):
     x, y = coord
     return x >= 0 and y >= 0 and x <= width and y <= height
@@ -60,11 +59,11 @@ if __name__ == "__main__":
         x1, y1 = tile1
         x2, y2 = tile2
         diff = abs(x1 - x2) + abs(y1 - y2)
-        save = steps[tile2] - steps[tile1] - diff
-        if save >= 100:
-            if diff == 2:
-                part1 += 1
-            if diff >= 2 and diff <= 20:
+        if diff >= 2 and diff <= 2:
+            save = steps[tile2] - steps[tile1] - diff
+            if save >= 100:
+                if diff == 2:
+                    part1 += 1
                 part2 += 1
 
     print("Part 1:", part1)
