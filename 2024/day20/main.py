@@ -4,24 +4,20 @@ def in_bound(width, height, coord):
 
 def bfs(maze, start, end):
     queue = [start]
-    explored = {start}
-    previous = dict()
-    steps_here = {start: 0}
+    steps = {start: 0}
 
     while len(queue) > 0:
         coord = queue.pop(0)
         if coord == end:
-            return previous, steps_here
+            return steps
         x, y = coord
         for n in [(x, y - 1), (x, y + 1), (x - 1, y), (x + 1, y)]:
             x2, y2 = n
-            if n not in explored and in_bound(len(maze[0]), len(maze), coord) and maze[y2][x2] != "#":
-                explored.add(n)
-                previous[n] = coord
-                steps_here[n] = steps_here[coord] + 1
+            if n not in steps and in_bound(len(maze[0]), len(maze), coord) and maze[y2][x2] != "#":
+                steps[n] = steps[coord] + 1
                 queue.append(n)
 
-    return previous, steps_here
+    return steps
 
 if __name__ == "__main__":
     import os
@@ -43,17 +39,9 @@ if __name__ == "__main__":
     part1 = 0
     part2 = 0
 
-    previous, steps = bfs(maze, start, end)
-    
-    path_set = {end}
+    steps = bfs(maze, start, end)
 
-    current = end
-
-    while current != start:
-        current = previous[current]
-        path_set.add(current)
-
-    for tile1 in path_set:
+    for tile1 in steps:
         x, y = tile1
         for dy in range(-20, 21):
             for dx in range(-20, 21):
@@ -61,7 +49,7 @@ if __name__ == "__main__":
                 if diff > 20:
                     continue
                 tile2 = (x + dx, y + dy)
-                if tile2 not in path_set:
+                if tile2 not in steps:
                     continue
                 save = steps[tile2]- steps[tile1] - diff
                 if save < 100:
