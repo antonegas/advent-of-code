@@ -1,4 +1,5 @@
 from collections import defaultdict
+from itertools import combinations
 
 
 def in_bound(width, height, coord):
@@ -46,41 +47,25 @@ if __name__ == "__main__":
     part1 = 0
     part2 = 0
 
-    previous, steps_there = bfs(maze, start, end)
+    previous, steps = bfs(maze, start, end)
 
     path = [end, previous[end]]
 
     while path[-1] != start:
         path.append(previous[path[-1]])
-        # print(steps_there[path[-1]])
-
-    # for y, l in enumerate(maze):
-    #     r = ""
-    #     for x, c in enumerate(l):
-    #         if (x, y) in path:
-    #             r += "O"
-    #         else:
-    #             r += c
-    #     print(r)
 
     cheats = defaultdict(lambda: 0)
 
-    for tile in path:
-        x, y = tile
-        for n in [(0, - 1), (0, 1), (-1, 0), (1, 0)]:
-            dx, dy = n
-            if in_bound(len(maze), len(maze[0]), (x + dx, y + dy)) and maze[y + dy][x + dx] == "#":
-                cheated_position = (x + dx * 2, y + dy * 2)
-                if cheated_position in path:
-                    time_here = steps_there[tile]
-                    time_there = steps_there[cheated_position]
-                    diff = time_there - time_here - 2
-                    if diff >= 100:
-                        part1 += 1
-                
-    # for k in cheats:
-    #     v = cheats[k]
-    #     print(k, v)
+    for tile2, tile1 in combinations(path, 2):
+        x1, y1 = tile1
+        x2, y2 = tile2
+        diff = abs(x1 - x2) + abs(y1 - y2)
+        save = steps[tile2] - steps[tile1] - diff
+        if save >= 100:
+            if diff == 2:
+                part1 += 1
+            if diff >= 2 and diff <= 20:
+                part2 += 1
 
     print("Part 1:", part1)
     print("Part 2:", part2)
