@@ -1,6 +1,3 @@
-from collections import defaultdict
-from itertools import combinations
-
 def in_bound(width, height, coord):
     x, y = coord
     return x >= 0 and y >= 0 and x <= width and y <= height
@@ -47,21 +44,28 @@ if __name__ == "__main__":
     part2 = 0
 
     previous, steps = bfs(maze, start, end)
+    
+    path_set = {end}
 
-    path = [end, previous[end]]
+    current = end
 
-    while path[-1] != start:
-        path.append(previous[path[-1]])
+    while current != start:
+        current = previous[current]
+        path_set.add(current)
 
-    cheats = defaultdict(lambda: 0)
-
-    for tile2, tile1 in combinations(path, 2):
-        x1, y1 = tile1
-        x2, y2 = tile2
-        diff = abs(x1 - x2) + abs(y1 - y2)
-        if diff >= 2 and diff <= 20:
-            save = steps[tile2] - steps[tile1] - diff
-            if save >= 100:
+    for tile1 in path_set:
+        x, y = tile1
+        for dy in range(-20, 21):
+            for dx in range(-20, 21):
+                diff = abs(dx) + abs(dy)
+                if diff > 20:
+                    continue
+                tile2 = (x + dx, y + dy)
+                if tile2 not in path_set:
+                    continue
+                save = steps[tile2]- steps[tile1] - diff
+                if save < 100:
+                    continue
                 if diff == 2:
                     part1 += 1
                 part2 += 1
