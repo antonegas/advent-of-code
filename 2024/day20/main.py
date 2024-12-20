@@ -59,7 +59,7 @@ if __name__ == "__main__":
         x1, y1 = tile1
         x2, y2 = tile2
         diff = abs(x1 - x2) + abs(y1 - y2)
-        if diff >= 2 and diff <= 2:
+        if diff >= 2 and diff <= 20:
             save = steps[tile2] - steps[tile1] - diff
             if save >= 100:
                 if diff == 2:
