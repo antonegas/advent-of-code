@@ -1,119 +1,85 @@
-from collections import defaultdict
+from functools import cache
 
-NUMERIC_KEYPAD = [
+num_keypad = [
     "789",
     "456",
     "123",
-    " 0A",
+    " 0A"
 ]
-
-DIRECTIONAL_KEYPAD = [
+dir_keypad = [
     " ^A",
     "<v>"
 ]
 
-DIRECTIONS = {
-    (0, 1): "v",
-    (0, -1): "^",
-    (1, 0): ">",
-    (-1, 0): "<"
-}
-
-def get_keypad_dict(keypad):
-    keypad_dict = defaultdict(lambda: dict())
-    previous = defaultdict(lambda: dict())
-
-    coords = []
-
-    for y, l in enumerate(keypad):
-        for x, c in enumerate(l):
-            if c != " ":
-                coords.append((x, y))
-
-    for coord_from in coords:
-        for coord_to in coords:
-            if coord_from == coord_to:
-                keypad_dict[coord_from][coord_to] = 0
-                previous[coord_from][coord_to] = coord_from
-            elif next_to(coord_from, coord_to):
-                keypad_dict[coord_from][coord_to] = 1
-                previous[coord_from][coord_to] = coord_from
-            else:
-                keypad_dict[coord_from][coord_to] = float('inf')
-                previous[coord_from][coord_to] = None
-
-    return keypad_dict, previous
-
-def get_key_pos(keypad, key):
-    for y, l in enumerate(keypad):
-        for x, c in enumerate(l):
-            if c == key:
+def get_key_position(keypad, key):
+    for y, keypad_line in enumerate(keypad):
+        for x, keypad_key in enumerate(keypad_line):
+            if keypad_key == key:
                 return (x, y)
+            
     return (-1, -1)
 
-def next_to(key1_pos, key2_pos):
-    x1, y1 = key1_pos
-    x2, y2 = key2_pos
+def get_possible_presses(keypad, from_key, to_key):
+    from_x, from_y = from_key
+    to_x, to_y = to_key
+    dx = to_x - from_x
+    dy = to_y - from_y
 
-    return abs(x1 - x2) + abs(y1 - y2) == 1
+    possible_presses = set()
 
+    if keypad[from_y][from_x + dx] != " ":
+        possible_presses.add(">" * dx + "<" * -dx + "v" * dy + "^" * -dy + "A")
+    if keypad[from_y + dy][from_x] != " ":
+        possible_presses.add("v" * dy + "^" * -dy + ">" * dx + "<" * -dx + "A")
 
-def floyd_warshall(keypad):
-    keypad_dict, previous = get_keypad_dict(keypad)
+    return possible_presses
 
-    for k in keypad_dict:
-        for i in keypad_dict:
-            for j in keypad_dict:
-                if keypad_dict[i][j] > keypad_dict[i][k] + keypad_dict[k][j]:
-                    keypad_dict[i][j] = keypad_dict[i][k] + keypad_dict[k][j]
-                    previous[i][j] = previous[k][j]
+def shortest_numeric_sequence(code, number_of_robots):
+    previous_key_position = get_key_position(num_keypad, "A")
 
-    return previous
-
-def get_path(previous, start, end):
-    if previous[start][end] == None:
-        return []
-    path = [end]
-    while start != end:
-        end = previous[start][end]
-        path = [end] + path
-    return path
-
-def get_paths(previous_coords):
-    paths = defaultdict(lambda: dict())
-
-    for coord_from in previous_coords:
-        for coord_to in previous_coords:
-            paths[coord_from][coord_to] = get_path(previous_coords, coord_from, coord_to)
-
-    return paths
-
-def numberic_part(code):
-    return int(code[:3])
-
-def full_code_directions(numberic_paths, directional_paths, code):
-    numeric_directions = ""
-    previous_key = "A"
+    sequence_length = 0
 
     for key in code:
-        numeric_directions += numberic_paths[previous_key][key] + "A"
-        previous_key = key
+        current_key_position = get_key_position(num_keypad, key)
+        shortest_resulting_length = float('inf')
+        possible_presses = get_possible_presses(num_keypad, previous_key_position, current_key_position)
 
-    directional_directions = ""
-    previous_key = "A"
+        for keypresses in possible_presses:
+            resulting_sequence_length = shortest_directional_sequence(keypresses, 1, number_of_robots)
 
-    for key in numeric_directions:
-        directional_directions += directional_paths[previous_key][key] + "A"
-        previous_key = key
+            if resulting_sequence_length < shortest_resulting_length:
+                shortest_resulting_length = resulting_sequence_length
 
-    my_directions = ""
-    previous_key = "A"
+        sequence_length += shortest_resulting_length
+        previous_key_position = current_key_position
 
-    for key in directional_directions:
-        my_directions += directional_paths[previous_key][key] + "A"
-        previous_key = key
+    return sequence_length
 
-    return my_directions
+@cache
+def shortest_directional_sequence(keypresses1, current, number_of_robots):
+    previous_key_position = get_key_position(dir_keypad, "A")
+
+    sequence_length = 0
+
+    for key in keypresses1:
+        current_key_position = get_key_position(dir_keypad, key)
+        possible_presses = get_possible_presses(dir_keypad, previous_key_position, current_key_position)
+        previous_key_position = current_key_position
+
+        if current == number_of_robots:
+            sequence_length += len(next(iter(possible_presses)))
+            continue
+
+        shortest_resulting_length = float('inf')
+        for t in possible_presses:
+            resulting_sequence_length = shortest_directional_sequence(t, current + 1, number_of_robots)
+
+            if resulting_sequence_length < shortest_resulting_length:
+                shortest_resulting_length = resulting_sequence_length
+
+        sequence_length += shortest_resulting_length
+
+    return sequence_length
 
 if __name__ == "__main__":
     import os
@@ -122,20 +88,14 @@ if __name__ == "__main__":
     data = open(os.path.join(__location__, "input.txt"), "r").read()
     codes = list(data.split("\n"))
 
+    # TODO: Might clean up later
+
     part1 = 0
     part2 = 0
 
-    numeric_previous = floyd_warshall(NUMERIC_KEYPAD)
-    directional_previous = floyd_warshall(DIRECTIONAL_KEYPAD)
-    numeric_paths = get_paths(numeric_previous)
-    directional_paths = get_paths(directional_previous)
-
-    current = "A"
-    code_directions = ""
-
     for code in codes:
-        print(full_code_directions(numeric_paths, directional_paths, code))
-
+        part1 += shortest_numeric_sequence(code, 2) * int(code[:-1])
+        part2 += shortest_numeric_sequence(code, 25) * int(code[:-1])
 
     print("Part 1:", part1)
     print("Part 2:", part2)
