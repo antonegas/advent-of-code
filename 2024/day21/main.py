@@ -1,6 +1,5 @@
 from collections import defaultdict
 
-
 NUMERIC_KEYPAD = [
     "789",
     "456",
@@ -13,29 +12,35 @@ DIRECTIONAL_KEYPAD = [
     "<v>"
 ]
 
+DIRECTIONS = {
+    (0, 1): "v",
+    (0, -1): "^",
+    (1, 0): ">",
+    (-1, 0): "<"
+}
+
 def get_keypad_dict(keypad):
     keypad_dict = defaultdict(lambda: dict())
     previous = defaultdict(lambda: dict())
-    keys = ""
 
-    for l in keypad:
-        for c in l:
+    coords = []
+
+    for y, l in enumerate(keypad):
+        for x, c in enumerate(l):
             if c != " ":
-                keys += c
+                coords.append((x, y))
 
-    for key_from in keys:
-        for key_to in keys:
-            key_from_pos = get_key_pos(keypad, key_from)
-            key_to_pos = get_key_pos(keypad, key_to)
-            if key_from == key_to:
-                keypad_dict[key_from][key_to] = 0
-                previous[key_from][key_to] = key_from
-            elif next_to(key_from_pos, key_to_pos):
-                keypad_dict[key_from][key_to] = 1
-                previous[key_from][key_to] = key_from
+    for coord_from in coords:
+        for coord_to in coords:
+            if coord_from == coord_to:
+                keypad_dict[coord_from][coord_to] = 0
+                previous[coord_from][coord_to] = coord_from
+            elif next_to(coord_from, coord_to):
+                keypad_dict[coord_from][coord_to] = 1
+                previous[coord_from][coord_to] = coord_from
             else:
-                keypad_dict[key_from][key_to] = float('inf')
-                previous[key_from][key_to] = None
+                keypad_dict[coord_from][coord_to] = float('inf')
+                previous[coord_from][coord_to] = None
 
     return keypad_dict, previous
 
@@ -68,18 +73,18 @@ def floyd_warshall(keypad):
 def get_path(previous, start, end):
     if previous[start][end] == None:
         return []
-    path = end
+    path = [end]
     while start != end:
         end = previous[start][end]
-        path += end + path
+        path = [end] + path
     return path
 
-def get_paths(previous):
+def get_paths(previous_coords):
     paths = defaultdict(lambda: dict())
 
-    for key_from in previous:
-        for key_to in previous:
-            paths[key_from][key_to] = get_path(previous, key_from, key_to)
+    for coord_from in previous_coords:
+        for coord_to in previous_coords:
+            paths[coord_from][coord_to] = get_path(previous_coords, coord_from, coord_to)
 
     return paths
 
@@ -124,8 +129,6 @@ if __name__ == "__main__":
     directional_previous = floyd_warshall(DIRECTIONAL_KEYPAD)
     numeric_paths = get_paths(numeric_previous)
     directional_paths = get_paths(directional_previous)
-
-
 
     current = "A"
     code_directions = ""
