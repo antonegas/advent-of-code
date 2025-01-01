@@ -56,7 +56,7 @@ if __name__ == "__main__":
     __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
     data = open(os.path.join(__location__, "input.txt"), "r").read()
-    robots = [[list(map(int, re.findall(r"-?[0-9]+", y))) for y in x.split(" ")] for x in data.split("\n")]
+    robots = [[list(map(int, re.findall(r"-?\d+", y))) for y in x.split(" ")] for x in data.split("\n")]
 
     WIDTH = 101
     HEIGHT = 103

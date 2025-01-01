@@ -5,7 +5,7 @@ if __name__ == "__main__":
     __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
     data = open(os.path.join(__location__, "input.txt"), "r").read()
-    clawmachines = [[list(map(int, re.findall(r"[0-9]+", y))) for y in x.split("\n")] for x in data.split("\n\n")]
+    clawmachines = [[list(map(int, re.findall(r"\d+", y))) for y in x.split("\n")] for x in data.split("\n\n")]
 
     part1 = 0
     part2 = 0

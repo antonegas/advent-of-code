@@ -5,7 +5,7 @@ if __name__ == "__main__":
     __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
     data = open(os.path.join(__location__, "input.txt"), "r").read()
-    ms = re.findall(r"(do\(\))|(don\'t\(\))|(mul\([0-9]+,[0-9]+\))", data)
+    ms = re.findall(r"(do\(\))|(don\'t\(\))|(mul\(\d+,\d+\))", data)
 
     part1 = 0
     part2 = 0
@@ -13,7 +13,7 @@ if __name__ == "__main__":
     do = True
 
     for m in ms:
-        t = re.findall("[0-9]+", m[2])
+        t = re.findall(r"\d+", m[2])
         if m[0]:
             do = True
         elif m[1]:
