@@ -82,31 +82,28 @@ def print_program_math(program):
         ]
         print(math_strings[opcode])
 
+def find_possible_as(program):
+    possible_as = [0]
+
+    for current in range(len(program) - 1, -1, -1):
+        new_possible_as = list()
+        for possible_a in possible_as:
+            shifted_possible_a = possible_a << 3
+            for i in range(8):
+                if run(program, shifted_possible_a + i, 0, 0) == program[current:]:
+                    new_possible_as.append(shifted_possible_a + i)
+        possible_as = new_possible_as
+
+    return possible_as
+
 if __name__ == "__main__":
     import os
     __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
     data = open(os.path.join(__location__, "input.txt"), "r").read()
-    rs, p = data.split("\n\n")
-    A, B, C = [int(re.findall(r"-?[0-9]+", x)[0]) for x in rs.split("\n")]
-    program = [int(x) for x in re.findall(r"-?[0-9]+", p)]
+    registers_data, program_data = data.split("\n\n")
+    A, B, C = [int(re.findall(r"\d+", x)[0]) for x in registers_data.split("\n")]
+    program = [int(x) for x in re.findall(r"\d+", program_data)]
 
-    part1 = ""
-
-    for output in run(program, A, B, C):
-        part1 += f"{output},"
-
-    possible_as = [0]
-
-    for k in range(len(program) - 1, -1, -1):
-        t = list()
-        for possible_a in possible_as:
-            for i in range(8):
-                j = possible_a << 3
-                j += i
-                if run(program, j, 0, 0) == program[k:]:
-                    t.append(j)
-        possible_as = t
-
-    print("Part 1:", part1[:-1])
-    print("Part 2:", min(possible_as))
+    print("Part 1:", ",".join(map(str, run(program, A, B, C))))
+    print("Part 2:", min(find_possible_as(program)))
