@@ -1,114 +1,67 @@
-def in_bound(patrol_map, position):
-    x, y = position
-    return x >= 0 and y >= 0 and x < len(patrol_map[0]) and y < len(patrol_map)
-
-if __name__ == "__main__":
-    import os
-    __location__ = os.path.realpath(
-    os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    data = open(os.path.join(__location__, "input.txt"), "r").read()
-    patrol_map = [x for x in data.split("\n")]
-
-    part1 = 0
-    part2 = 0
-
-    initial_dx = 0
-    initial_dy = 0
-    start = (0, 0,)
-
+def find_start(patrol_map):
     for x in range(len(patrol_map[0])):
         for y in range(len(patrol_map)):
             if patrol_map[y][x] == "^":
-                initial_dy = -1
-                start = (x, y,)
-                break
-            if patrol_map[y][x] == "v":
-                initial_dy = 1
-                start = (x, y,)
-                break
-            if patrol_map[y][x] == "<":
-                initial_dx = -1
-                start = (x, y,)
-                break
-            if patrol_map[y][x] == ">":
-                initial_dx = 1
-                start = (x, y,)
-                break
+                return x, y
 
-    dx = initial_dx
-    dy = initial_dy
+    return -1, -1
+
+def in_bound(patrol_map, x, y):
+    return x >= 0 and y >= 0 and x < len(patrol_map[0]) and y < len(patrol_map)
+
+def patrol(patrol_map, start):
+    x, y = start
+    dx, dy = 0, -1
 
     positions = set()
-    current_position = start
+    visited = set()
 
     while True:
-        x, y = current_position
-        moved_position = (x + dx, y + dy)
+        if (x, y, dx, dy) in visited:
+            return positions, True
+        
+        visited.add((x, y, dx , dy))
 
-        if not in_bound(patrol_map, moved_position):
-            break
+        next_x = x + dx
+        next_y = y + dy
 
-        if patrol_map[moved_position[1]][moved_position[0]] == "#":
-            if dy == -1:
-                dx = 1
-                dy = 0
-            elif dx == 1:
-                dx = 0
-                dy = 1
-            elif dy == 1:
-                dx = -1
-                dy = 0
-            elif dx == -1:
-                dx = 0
-                dy = -1
+        if not in_bound(patrol_map, next_x, next_y):
+            return positions, False
+
+        if patrol_map[next_y][next_x] == "#":
+            dx, dy = -dy, dx
         else:
-            current_position = moved_position
-            positions.add(current_position)
+            x, y = next_x, next_y
+            positions.add((x, y))
 
+def get_infinite_obstructions(patrol_map, positions, start):
     obstructions = set()
 
     for position in positions:
         if position == start:
             continue
 
-        obstruction = position
-        visited = set()
-        
-        dx = initial_dx
-        dy = initial_dy
+        x, y = position
+        patrol_map[y][x] = "#"
 
-        current_position = start
+        _, infinite = patrol(patrol_map, start)
+        if infinite:
+            obstructions.add((x, y))
 
-        while True:
-            if (*current_position, dx, dy) in visited:
-                obstructions.add(obstruction)
-                break
+        patrol_map[y][x] = "."
 
-            visited.add((*current_position, dx, dy))
+    return obstructions
 
-            x, y = current_position
-            moved_position = (x + dx, y + dy)
+if __name__ == "__main__":
+    import os
+    __location__ = os.path.realpath(
+    os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    data = open(os.path.join(__location__, "input.txt"), "r").read()
+    patrol_map = [[x for x in y] for y in data.split("\n")]
 
-            if not in_bound(patrol_map, moved_position):
-                break
-
-            if moved_position == obstruction or patrol_map[moved_position[1]][moved_position[0]] == "#":
-                if dy == -1:
-                    dx = 1
-                    dy = 0
-                elif dx == 1:
-                    dx = 0
-                    dy = 1
-                elif dy == 1:
-                    dx = -1
-                    dy = 0
-                elif dx == -1:
-                    dx = 0
-                    dy = -1
-            else:
-                current_position = moved_position
-
+    start = find_start(patrol_map)
+    positions, _ = patrol(patrol_map, start)
+    obstructions = get_infinite_obstructions(patrol_map, positions, start)
 
     print("Part 1:", len(positions))
     print("Part 2:", len(obstructions))
-
